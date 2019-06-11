@@ -1,5 +1,7 @@
 #pragma once
 
+#define RV64INS_SIZE 4
+
 #define OP_MASK 0x0000007f  //mask of opcode
 
 #define OP_R 0x33           //opcode of R type

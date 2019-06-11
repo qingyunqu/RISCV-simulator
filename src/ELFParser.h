@@ -6,7 +6,7 @@
 #include "include/elf_defs.h"
 #include "include/type_defs.h"
 
-namespace simulator {
+namespace riscv {
 
 class ELFParser {
 private:
@@ -30,25 +30,29 @@ private:
     /* StrTab */
     uint64_t strtab_off;
 
+public:
     /* main function virtual address */
     uint64_t main_vaddr;
 public:
-    void read_elf(char* filename) {
-        FILE* elf = fopen(filename, "rb");
-        if (elf == NULL){
-            fprintf(stderr, "Can't open file: %s\n", filename);
-            exit(-1);
-        }
-
-        parse_elf_header(elf);
-        parse_main_addr(elf);
-
-        fseek(elf, 0, SEEK_SET);
-    }
+    void read_elf(char* filename);
     void parse_elf_header(FILE* elf);
     void parse_section_headers(FILE* elf);
     void parse_program_headers(FILE* elf);
     void parse_main_addr(FILE* elf);
 };
 
-} //namespace simulator
+inline void ELFParser::read_elf(char* filename)
+{
+    FILE* elf = fopen(filename, "rb");
+    if (elf == NULL){
+        fprintf(stderr, "Can't open file: %s\n", filename);
+        exit(-1);
+    }
+
+    parse_elf_header(elf);
+    parse_main_addr(elf);
+
+    fseek(elf, 0, SEEK_SET);
+}
+
+} //namespace riscv

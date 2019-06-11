@@ -1,7 +1,7 @@
 #include <string.h>
 #include "src/ELFParser.h"
 
-using namespace simulator;
+using namespace riscv;
 
 void ELFParser::parse_elf_header(FILE* elf)
 {

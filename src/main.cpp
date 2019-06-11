@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <unistd.h>
+#include "src/Simulator.h"
 
 extern char* optarg;
 
@@ -24,7 +25,7 @@ int main(int argc, char** argv)
                     print_help();
                     return 0;
                 case 's':
-                    single_step_flag = 1;
+                    riscv::Simulator::single_step_flag = true;
                     break;
                 case '?':
                     return 0;
