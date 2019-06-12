@@ -94,6 +94,8 @@ void ELFParser::parse_main_addr(FILE* elf)
         if(strcmp(sym_name, "main") == 0){
             main_vaddr = *(uint64_t*)&elf64_sym.st_value;
             debug("main function vaddress: 0x%llx\n", main_vaddr);
+            main_end_vaddr = main_vaddr + *(uint64_t*) &elf64_sym.st_size - 4;
+			debug("main end vaddress : 0x%llx\n", main_end_vaddr);
             return;
         }
     }

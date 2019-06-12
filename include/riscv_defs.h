@@ -1,6 +1,6 @@
 #pragma once
 
-#define RV64INS_SIZE 4
+#define INS32B_SIZE 4  // instruction length
 
 #define OP_MASK 0x0000007f  //mask of opcode
 
@@ -34,58 +34,60 @@
 
 
 //instruction in Simple Green Card
-#define BUBBLE 0
-#define ADD 1
-#define MUL 2
-#define SUB 3
-#define SLL 4
-#define MULH 5
-#define MULW 39
-#define SLT 6
-#define XOR 7
-#define DIV 8
-#define SRL 9
-#define SRA 10
-#define OR 11
-#define REM 12
-#define AND 13
+enum InsType{
+    BUBBLE  = 0,
+    ADD = 1,
+    MUL = 2,
+    SUB = 3,
+    SLL = 4,
+    MULH = 5,
+    MULW = 39,
+    SLT = 6,
+    XOR = 7,
+    DIV = 8,
+    SRL = 9,
+    SRA = 10,
+    OR = 11,
+    REM = 12,
+    AND = 13,
 
-#define LB 14
-#define LH 15
-#define LW 16
-#define LD 17
+    LB = 14,
+    LH = 15,
+    LW = 16,
+    LD = 17,
 
-#define ADDI 18
-#define SLLI 19
-#define SLLIW 40
-#define SLTI 20
-#define XORI 21
-#define SRLI 22
-#define SRLIW 41
-#define SRAI 23
-#define SRAIW 42
-#define ORI 24
-#define ANDI 25
+    ADDI = 18,
+    SLLI = 19,
+    SLLIW = 40,
+    SLTI = 20,
+    XORI = 21,
+    SRLI = 22,
+    SRLIW = 41,
+    SRAI = 23,
+    SRAIW = 42,
+    ORI = 24,
+    ANDI = 25,
 
-#define ADDIW 26
+    ADDIW = 26,
 
-#define JALR 27
+    JALR = 27,
 
-#define ECALL 28
+    ECALL = 28,
 
-#define SB 29
-#define SH 30
-#define SW 31
-#define SD 32
+    SB = 29,
+    SH = 30,
+    SW = 31,
+    SD = 32,
 
-#define BEQ 33
-#define BNE 34
-#define BLT 35
-#define BGE 36
-#define AUIPC 37
-#define LUI 38
-#define JAL 43
-#define ADDW 44
+    BEQ = 33,
+    BNE = 34,
+    BLT = 35,
+    BGE = 36,
+    AUIPC = 37,
+    LUI = 38,
+    JAL = 43,
+    ADDW = 44,
+};
 
 //Register Index
 #define ZERO 0
@@ -104,3 +106,9 @@
 #define A3 13
 #define A4 14
 #define A5 15
+
+//cycle config
+#define MUL32CYCLE 30
+#define MUL64CYCLE 60
+#define DIV32CYCLE 40
+#define DIV64CYCLE 80

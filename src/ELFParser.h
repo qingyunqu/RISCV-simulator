@@ -33,6 +33,7 @@ private:
 public:
     /* main function virtual address */
     uint64_t main_vaddr;
+    uint64_t main_end_vaddr;
 public:
     void read_elf(char* filename);
     void parse_elf_header(FILE* elf);
