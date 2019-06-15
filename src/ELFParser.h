@@ -1,7 +1,6 @@
 #pragma once
 
 #include <stdio.h>
-#include <stdlib.h>
 #include "include/debug.h"
 #include "include/elf_defs.h"
 #include "include/type_defs.h"
