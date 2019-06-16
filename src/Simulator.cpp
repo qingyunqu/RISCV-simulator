@@ -47,8 +47,45 @@ void Simulator::read_into_memory(const char* filename){
     }
 }
 
-void Simulator::single_step(){
+void Simulator::single_step() {
+	printf("Simulator Single Step Mode:\n");
+	printf("r (run)\n");
+	printf("n (next)\n");
+	printf("R (show registers)\n");
+	printf("M addr (show memory)\n");
+	printf("q (quit)\n");
 
+	char cmd;
+	bool not_end = true;
+	while(1) {
+		cmd = getchar();
+		switch(cmd) {
+			case 'q':
+				return;
+			case 'r':
+				while(not_end){
+					not_end = one_ins_exec();
+				}
+				return;
+			case 'n':
+				printf("%llx : ", cpu.pc);
+				not_end = one_ins_exec();
+				printf("%08x\n", cpu.ir);
+				if(!not_end)
+					return;
+				break;
+			case 'R':
+				show_register();
+				break;
+			case 'M':
+				uint64_t addr;
+				scanf(" %llx", &addr);
+				show_memory(addr);
+				break;
+			default:
+				break;
+		}
+	}
 }
 
 void Simulator::pipeline(){
@@ -74,8 +111,21 @@ bool Simulator::one_ins_exec(){
         old_ins = 1;
         old_rd = rd;
     }
+	else if(ins_type != LB || ins_type != LH || ins_type != LW || ins_type != LD){
+		if(old_ins == 1){
+			if((old_rd == rs1 || old_rd == rs2) && rd != 0){
+				state.load_use_stall++;
+			}
+		}
+		old_ins = 0;
+	}
 
     uint64_t ex_ret = EX(ins_type, rs1, rs2, imm);
+	if(ins_type == BEQ || ins_type == BNE || ins_type == BLT || ins_type == BGE){
+		if(ex_ret == 0){
+			state.b_stall++;
+		}
+	}
 
     uint64_t mem_ret = MEM(ins_type, ex_ret, rs2);
 
@@ -720,4 +770,12 @@ void Simulator::write_mem(uint64_t addr, uint64_t reg_v, int32_t byte){
 			*(uint64_t*)(mem.memory + addr - mem.memory_offset) = reg_v;
 			break;
 	}
+}
+
+void Simulator::show_register() {
+
+}
+
+void Simulator::show_memory(uint64_t addr) {
+
 }

@@ -91,6 +91,8 @@ public:
     uint32_t get_instruction();
     uint64_t read_mem(uint64_t addr, int32_t byte);
     void write_mem(uint64_t addr, uint64_t reg_v, int32_t byte);
+    void show_register();
+    void show_memory(uint64_t addr);
 };
 
 inline Simulator::Simulator(uint64_t start_vaddr, uint64_t end_vaddr){
