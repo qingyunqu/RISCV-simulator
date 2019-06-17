@@ -4,23 +4,108 @@ using namespace riscv;
 
 void Memory::HandleRequest(uint64_t addr, int32_t bytes, bool read, bool& hit, int32_t& time) {
     hit = true;
-    time = latency.hit_latency + latency. bus_latency;
-    stats.access_time += time;
-    stats.access_counter++;
+    time = hit_latency;
+    stats.access_cnt++;
 }
 
 void Cache::initSet() {
     this->set = new CacheSet[this->config.set_num];
     for(int s = 0; s < config.set_num; s++){
-        this->set[s].line = new CacheLine[config.association];
-        for(int l = 0; l < config.association; l++){
+        this->set[s].line = new CacheLine[config.associativity];
+        for(int l = 0; l < config.associativity; l++){
             set[s].line[l].tag = 0;
             set[s].line[l].valid = false;
             set[s].line[l].dirty = false;
-            set[s].line[l].not_access_time = 0;
         }
     }
 }
-void Cache::HandleRequest(uint64_t addr, int32_t bytes, bool read, bool& hit, int32_t& time) {
 
+void Cache::handleRequest(uint64_t addr, int32_t bytes, bool read, bool& hit, int32_t& time) {
+    time = 0;
+    hit = false;
+    this->stats.access_cnt++;
+
+    uint64_t tag;
+    int32_t s;
+    int32_t l;
+
+    tag = (addr >> (config.s + config.b)) << (config.s + config.b);
+    s = (addr - tag) >> config.b;
+    l = isHit(s, tag);
+    if(l < 0){
+        hit = false;
+        if(read){
+            int32_t lower_hit, lower_time;
+            lower->handleRequest(addr, bytes, read, lower_hit, lower_time);
+            time += lower_time;
+            stats.miss_num++;
+            l = replace(s, tag);
+            return;
+        }
+        else{
+            if(config.write_allocate){
+                int32_t lower_hit, lower_time;
+                lower->handleRequest(addr, bytes, read, lower_hit, lower_time);
+                time += lower_time;
+                stats.miss_num++;
+                l = replace(s, tag);
+                setDirty(s, l, true);
+                return;
+            }
+            else{
+                int32_t lower_hit, lower_time;
+                lower->handleRequest(addr, bytes, read, lower_hit, lower_time);
+                time += lower_time;
+                stats.miss_num++;
+                return;
+            }
+        }
+    }
+    else{
+        hit = true;
+        if(read){
+            time = hit_latency;
+            return;
+        }
+        else{
+            if(config.write_through){
+                time = hit_latency;
+                int lower_hit, lower_time;
+                lower->handleRequest(addr, bytes, read, lower_hit, lower_time);
+                return;
+            }
+            else{
+                time = hit_latency;
+                setDirty(s, l, true);
+                return;
+            }
+        }
+    }
+}
+
+int32_t Cache::isHit(int32_t s, uint64_t tag){
+    for(int l = 0; l < config.association; l++){
+        if(set[s].line[l].valid != 0 && set[s].line[l].tag == tag){
+            return l;
+        }
+    }
+    return -1;
+}
+
+int32_t Cache::replace(int32_t s, uint64_t tag){
+    for(int i = 0; i < config.associativity; i++){
+        if(!set[s].line[i].valid){
+            setTag(s, i, tag);
+            setValid(s, i);
+            return i;
+        }
+    }
+    evict(s, 0);
+    setTag(s, 0, tag);
+    stats.replace_num++;
+    return 0;
+}
+
+void Cache::evict(int32_t s, int32_t l){
+    set[s].line[l].dirty = false;
 }

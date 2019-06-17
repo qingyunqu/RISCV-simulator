@@ -6,35 +6,34 @@
 namespace riscv {
 
 struct StorageStats {
-    int32_t access_counter;
+    int32_t access_cnt;
     int32_t miss_num;
-    int32_t access_time;
     int32_t replace_num;
-};
-
-struct StorageLatency {
-    int32_t hit_latency;
-    int32_t bus_latency;
 };
 
 class Storage {
 public:
     StorageStats stats;
-    StorageLatency latency;
+    int32_t hit_latency;
+
 public:
-    void SetStats(StorageStats ss) { this->stats = ss; }
-    void SetLatency(StorageLatency sl) { this->latency = sl; }
-    virtual void HandleRequest(uint64_t addr, int32_t bytes, bool read, bool& hit, int32_t& time) = 0;
+    Srorgae() {
+        stats.access_cnt = 0;
+        stats.miss_num = 0;
+        stats.replace_num = 0;
+    }
+    void setLatency(int32_t hl) { this->latency->hit_latency = hl; }
+    virtual void handleRequest(uint64_t addr, int32_t bytes, bool read, bool& hit, int32_t& time) = 0;
 };
 
 class Memory : public Storage {
 public:
-    virtual void HandleRequest(uint64_t addr, int32_t bytes, bool read, bool& hit, int32_t& time);
+    virtual void handleRequest(uint64_t addr, int32_t bytes, bool read, bool& hit, int32_t& time);
 };
 
 struct CacheConfig {
     int32_t size;
-    int32_t association;
+    int32_t associativity;
     int32_t set_num;
     bool write_through;
     bool write_allocate;
@@ -48,7 +47,6 @@ struct CacheLine {
     uint64_t tag;
     bool valid;
     bool dirty;
-    int32_t not_access_time;
 };
 
 struct CacheSet {
@@ -60,6 +58,7 @@ public:
     CacheConfig config;
     Storage* lower;
     CacheSet* set;
+
 public:
     ~Cache(){
         for(int s = 0; s < config.set_num; s++){
@@ -67,11 +66,17 @@ public:
         }
         delete[] this->set;
     }
-    void SetConfig(Cacheconfig cc) { config = cc; }
-    void SetLower(Storage* ls) { lower = ls; }
+    void setConfig(CacheConfig cc) { config = cc; }
+    void setLower(Storage* ls) { lower = ls; }
+    void setTag(int32_t s, int32_t l, uint64_t tag) { set[s].line[l].tag = tag; }
+    void setDirty(int32_t s, int32_t l, bool dirty) { set[s].line[l].dirty = dirty; }
+    void setValid(int32_t s, int32_t l) { set[s].line[l].valid = true; }
     void initSet();
+    int32_t isHit(int32_t s, uint64_t tag);
+    int32_t replace(int32_t s, uint64_t tag);
+    void evict(int32_t s, int32_t l);
 
-    virtual void HandleRequest(uint64_t addr, int32_t bytes, bool read, bool& hit, int32_t& time);
+    virtual void handleRequest(uint64_t addr, int32_t bytes, bool read, bool& hit, int32_t& time);
 };
 
 } // namespace riscv
