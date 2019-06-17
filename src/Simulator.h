@@ -4,6 +4,22 @@
 #include "include/riscv_defs.h"
 #include "include/type_defs.h"
 #include "include/debug.h"
+#include "src/Cache.h"
+
+namespace {
+inline int32_t get_two(int32_t i){
+    int32_t a = 0;
+    while(1){
+        i = i / 2;
+        if(i == 0){
+            return a;
+        }
+        else{
+            a++;
+        }
+    }
+}
+}
 
 namespace riscv {
 
@@ -59,6 +75,8 @@ private:
     CPU cpu;
     Memory mem;
     State state;
+    Cache l1;
+    MemoryStorage mem_storage;
 
     uint64_t start_addr;
     uint64_t end_addr;
@@ -74,6 +92,7 @@ private:
 
 public:
     Simulator(uint64_t start_vaddr, uint64_t end_vaddr);
+    void initStorage();
     void read_into_memory(const char* filename);
     void run();
     void single_step();
@@ -93,6 +112,7 @@ public:
     void write_mem(uint64_t addr, uint64_t reg_v, int32_t byte);
     void show_register();
     void show_memory(uint64_t addr);
+    void cache(uint64_t addr, bool read);
 };
 
 inline Simulator::Simulator(uint64_t start_vaddr, uint64_t end_vaddr){
@@ -104,6 +124,25 @@ inline Simulator::Simulator(uint64_t start_vaddr, uint64_t end_vaddr){
     cpu.pc = start_vaddr;
     cpu.reg[SP] = (uint64_t)mem.stack;
     cpu.reg[GP] = (uint64_t)mem.bss;
+    initStorage();
+}
+
+inline void Simulator::initStorage(){
+    mem_storage.setLatency(1000); // memory latency
+    CacheConfig config;
+    config.size = 32 * 1024; // 32KB
+    config.associativity = 1; // line = 1
+    config.block_size = 64; // block = 64 bytes
+    config.set_num = config.size / (config.block_size * config.associativity);
+    config.b = get_two(config.block_size);
+    config.s = get_two(config.set_num);
+    config.t = 64 - config.s - config.b;
+    config.write_allocate = true;
+    config.write_through = true;
+    l1.setConfig(config);
+    l1.setLatency(10);  // l1 latency
+    l1.initSet();
+    l1.setLower(&mem_storage);
 }
 
 inline void Simulator::run(){

@@ -17,16 +17,16 @@ public:
     int32_t hit_latency;
 
 public:
-    Srorgae() {
+    Storage() {
         stats.access_cnt = 0;
         stats.miss_num = 0;
         stats.replace_num = 0;
     }
-    void setLatency(int32_t hl) { this->latency->hit_latency = hl; }
+    void setLatency(int32_t hl) { this->hit_latency = hl; }
     virtual void handleRequest(uint64_t addr, int32_t bytes, bool read, bool& hit, int32_t& time) = 0;
 };
 
-class Memory : public Storage {
+class MemoryStorage : public Storage {
 public:
     virtual void handleRequest(uint64_t addr, int32_t bytes, bool read, bool& hit, int32_t& time);
 };
@@ -68,6 +68,7 @@ public:
     }
     void setConfig(CacheConfig cc) { config = cc; }
     void setLower(Storage* ls) { lower = ls; }
+
     void setTag(int32_t s, int32_t l, uint64_t tag) { set[s].line[l].tag = tag; }
     void setDirty(int32_t s, int32_t l, bool dirty) { set[s].line[l].dirty = dirty; }
     void setValid(int32_t s, int32_t l) { set[s].line[l].valid = true; }

@@ -153,6 +153,7 @@ bool Simulator::one_ins_exec(){
 }
 
 void Simulator::IF(){
+	cache((uint64_t)(cpu.pc + mem.memory - mem.memory_offset), true);
     cpu.ir = get_instruction();
     debug("%llx : %08x\n", cpu.pc, cpu.ir);
     cpu.pc += INS32B_SIZE;
@@ -732,19 +733,19 @@ void Simulator::WB(InsType type, uint64_t mem_result, uint32_t wb_rd){
 uint64_t Simulator::read_mem(uint64_t addr, int32_t byte){
     switch(byte){
 		case 1:
-			//mem((unsigned long long)(memory+addr-mem_offset),1);
+			cache((uint64_t)(mem.memory + addr - mem.memory_offset), true);
 			return *(uint8_t*)(mem.memory + addr - mem.memory_offset);
 			break;
 		case 2:
-			//mem((unsigned long long)(memory+addr-mem_offset),1);
+			cache((uint64_t)(mem.memory + addr - mem.memory_offset), true);
 			return *(uint16_t*)(mem.memory + addr - mem.memory_offset);
 			break;
 		case 4:
-			//mem((unsigned long long)(memory+addr-mem_offset),1);
+			cache((uint64_t)(mem.memory + addr - mem.memory_offset), true);
 			return *(uint32_t*)(mem.memory + addr - mem.memory_offset);
 			break;
 		case 8:
-			//mem((unsigned long long)(memory+addr-mem_offset),1);
+			cache((uint64_t)(mem.memory + addr - mem.memory_offset), true);
 			return *(uint64_t*)(mem.memory + addr - mem.memory_offset);
 			break;
 	}
@@ -754,19 +755,19 @@ uint64_t Simulator::read_mem(uint64_t addr, int32_t byte){
 void Simulator::write_mem(uint64_t addr, uint64_t reg_v, int32_t byte){
     switch(byte){
 		case 1:
-			//mem((unsigned long long)(memory+addr-mem_offset),0);
+			cache((uint64_t)(mem.memory + addr - mem.memory_offset), false);
 			*(uint8_t*)(mem.memory + addr - mem.memory_offset) = (uint8_t)reg_v;
 			break;
 		case 2:
-			//mem((unsigned long long)(memory+addr-mem_offset),0);
+			cache((uint64_t)(mem.memory + addr - mem.memory_offset), false);
 			*(uint16_t*)(mem.memory + addr - mem.memory_offset) = (uint16_t)reg_v;
 			break;
 		case 4:
-			//mem((unsigned long long)(memory+addr-mem_offset),0);
+			cache((uint64_t)(mem.memory + addr - mem.memory_offset), false);
 			*(uint32_t*)(mem.memory + addr - mem.memory_offset) = (uint32_t)reg_v;
 			break;
 		case 8:
-			//mem((unsigned long long)(memory+addr-mem_offset),0);
+			cache((uint64_t)(mem.memory + addr - mem.memory_offset), false);
 			*(uint64_t*)(mem.memory + addr - mem.memory_offset) = reg_v;
 			break;
 	}
@@ -778,4 +779,10 @@ void Simulator::show_register() {
 
 void Simulator::show_memory(uint64_t addr) {
 
+}
+
+void Simulator::cache(uint64_t addr, bool read) {
+	bool hit;
+	int32_t time;
+	l1.handleRequest(addr, 1, read, hit, time);
 }

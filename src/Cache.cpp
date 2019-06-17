@@ -2,7 +2,7 @@
 
 using namespace riscv;
 
-void Memory::HandleRequest(uint64_t addr, int32_t bytes, bool read, bool& hit, int32_t& time) {
+void MemoryStorage::handleRequest(uint64_t addr, int32_t bytes, bool read, bool& hit, int32_t& time) {
     hit = true;
     time = hit_latency;
     stats.access_cnt++;
@@ -35,7 +35,8 @@ void Cache::handleRequest(uint64_t addr, int32_t bytes, bool read, bool& hit, in
     if(l < 0){
         hit = false;
         if(read){
-            int32_t lower_hit, lower_time;
+            bool lower_hit;
+            int32_t lower_time;
             lower->handleRequest(addr, bytes, read, lower_hit, lower_time);
             time += lower_time;
             stats.miss_num++;
@@ -44,7 +45,8 @@ void Cache::handleRequest(uint64_t addr, int32_t bytes, bool read, bool& hit, in
         }
         else{
             if(config.write_allocate){
-                int32_t lower_hit, lower_time;
+                bool lower_hit;
+                int32_t lower_time;
                 lower->handleRequest(addr, bytes, read, lower_hit, lower_time);
                 time += lower_time;
                 stats.miss_num++;
@@ -53,7 +55,8 @@ void Cache::handleRequest(uint64_t addr, int32_t bytes, bool read, bool& hit, in
                 return;
             }
             else{
-                int32_t lower_hit, lower_time;
+                bool lower_hit;
+                int32_t lower_time;
                 lower->handleRequest(addr, bytes, read, lower_hit, lower_time);
                 time += lower_time;
                 stats.miss_num++;
@@ -70,7 +73,8 @@ void Cache::handleRequest(uint64_t addr, int32_t bytes, bool read, bool& hit, in
         else{
             if(config.write_through){
                 time = hit_latency;
-                int lower_hit, lower_time;
+                bool lower_hit;
+                int32_t lower_time;
                 lower->handleRequest(addr, bytes, read, lower_hit, lower_time);
                 return;
             }
@@ -84,7 +88,7 @@ void Cache::handleRequest(uint64_t addr, int32_t bytes, bool read, bool& hit, in
 }
 
 int32_t Cache::isHit(int32_t s, uint64_t tag){
-    for(int l = 0; l < config.association; l++){
+    for(int l = 0; l < config.associativity; l++){
         if(set[s].line[l].valid != 0 && set[s].line[l].tag == tag){
             return l;
         }
